@@ -1,27 +1,16 @@
-FROM python:3.9-alpine3.13
+FROM python:3.7-alpine
 LABEL maintainer="maxmaxiee.com"
 
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements.dev.txt /tmp/requirements.dev.txt
-COPY ./app /app
+# Install dependencies
+COPY ./requirements.txt requirements.txt
+RUN pip install -r /requirements.txt
+
+# Setup directory structure
+RUN mkdir /app
 WORKDIR /app
-EXPOSE 8000
+COPY ./app/ /app
 
-ARG DEV=false
-RUN python -m venv /py && \
-    /py/bin/pip install --upgrade pip && \
-    /py/bin/pip install -r /tmp/requirements.txt && \
-    if [ $DEV = "true" ]; \
-        then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
-    fi && \
-    rm -rf /tmp && \
-    adduser \
-        --disabled-password \
-        --no-create-home \
-        django-user
-
-ENV PATH="/py/bin:$PATH"
-
-USER django-user
+RUN adduser -D user
+USER user
